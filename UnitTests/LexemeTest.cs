@@ -13,11 +13,7 @@ namespace UnitTests
         public void Input1()
         {
             ILexemeProvider p = new LexemeProvider("      Nexus is valid");
-
-            if(p.Next())
-                Assert.IsTrue('N' == p.Current);
-            else
-                Assert.Fail("Could not find the first character");
+            Assert.IsTrue('N' == p.Current);
         }
 
         [TestMethod("All empty input cannot be traversed")]
