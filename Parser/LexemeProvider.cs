@@ -2,103 +2,101 @@
 using System.Runtime.CompilerServices;
 using LanguageExt;
 
+using static LanguageExt.Prelude;
+
 namespace Parser
 {
     public class LexemeProvider :ILexemeProvider
     {
         readonly Memory<char> _data;
+        readonly int _maxPosition;
+
         int _index;
 
 
-        public LexemeProvider(string input)
+        public LexemeProvider(in string input)
         {
             if(!string.IsNullOrEmpty(input))
             {
-                _data = input.ToCharArray();
+                _data = new Memory<char>(input.ToCharArray());
+                _maxPosition = _data.Length-1;
                 Reset();
             }
             else
                 throw new NullReferenceException("Input string is empty. Lexeme provider must have non empty string");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool IsValidCharacter(char ch) => !(char.IsWhiteSpace(ch) || char.IsControl(ch) || char.IsSurrogate(ch));
+        public Option<Lexeme> LookAhead => ReadAtPosition(_index + 1);
+        public Lexeme Current
+        {
+            get
+            {
+                var t0 = ReadAtPosition(_index);
+                return t0.Match(x => x, () => throw new InvalidOperationException());
+            }
+        }
+        public bool IsSafeToRead => _index <= _maxPosition;
 
-        public Option<char> Future => GetAt(_index + 1);
-        public char Current => GetAt(_index).Match(x => x, () => throw new InvalidOperationException());
         public bool Next()
         {
             var ret = false;
-            var maxPosition = _data.Length-1;
-            var idx = _index+1;
 
-            if(idx < maxPosition)  // Just started, skip any non valid characters
+            switch(_index)
             {
-                do
-                {
-                    if(IsValidCharacter(_data.Span[idx]))
-                    {
-                        ret = true;
-                        break;
-                    }
-                    else
-                        idx++;
-                }
-                while(idx <= maxPosition);
-                _index = idx > maxPosition ? maxPosition : idx;
-            }
-            else if(_index > maxPosition)
-            {
-                ret = false;
-            }
-            else
-            {
-                _index = maxPosition;
-                ret = false;
-            }
+                case int x when x < _maxPosition:
+                    _index += 1;
+                    ret = true;
+                    break;
 
+                case int x when x == _maxPosition:
+                    _index += 1;
+                    ret = false;
+                    break;
+
+                case int x when x > _maxPosition:
+                    ret = false;
+                    break;
+            }
+ 
             return ret;
         }
-
-        public void Reset()
-        {
-            _index = 0;
-
-            while(!IsValidCharacter(_data.Span[_index]))
-                _index+=1;
-        }
-
+        public void Reset() => _index = 0;
         public bool Back() {
             var ret = false;
-           
-            if (_index == 0)
-                ret = false;
-            else if (_index > 0)
+
+            switch(_index)
             {
-                _index-=1;
-                ret = true;
+                case 0:
+                    ret = false;
+                    break;
+
+                case int x when x < 0:
+                    _index = 0;
+                    ret = false;
+                    break;
+
+                case int x when x>0:
+                    _index -= 1;
+                        ret = true;
+                    break;
             }
-            else // index < 0
-            {
-                _index =0;
-                ret = false;
-            }
+
             return ret;
         }
 
-
-        Option<char> GetAt(int position)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool IsValidCharacter(char ch) => !(char.IsControl(ch) || char.IsSurrogate(ch));
+        Option<Lexeme> ReadAtPosition(int position)
         {
-            var idx = position;
-
-            if(idx < _data.Length - 1)
+            if(position <= _maxPosition)
             {
-                var ch = _data.Span[idx];
-                var t0 = IsValidCharacter(ch) ? Prelude.Some(ch) : Prelude.None;
+                var ch = _data.Span[position];
+                var t0 = IsValidCharacter(ch) ? Some(new Lexeme(ch)) : None;
                 return t0;
             }
-                
-            return Option<char>.None;
+            else
+                return Option<Lexeme>.None;
+
         }
     }
 }

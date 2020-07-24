@@ -139,7 +139,7 @@ namespace Parser
 
 
         enum States { Started, LetterFound, LetterOrDigitFound, DotFound, Finished, Error };
-        enum LexemeType { Unknown, Alpha, Digit, Dot, Symbol };
+        //enum LexemeType { Unknown, Alpha, Digit, Dot, Symbol };
 
 
         /// <summary>
@@ -151,40 +151,35 @@ namespace Parser
         public Option<string> Get()
         {
             var token = Option<string>.None;
-            Func<char, LexemeType> lexemeIs = (ch) =>
+
+
+            while(_provider.Current.type == Parser.LexemeType.Space)
             {
-                var type = LexemeType.Unknown;
+                if(!_provider.Next())  // its not safe to read further, quit now!
+                    return token;
+            }
+            
 
-                if(char.IsLetter(ch)) type = LexemeType.Alpha;
-                else if(char.IsDigit(ch)) type = LexemeType.Digit;
-                else if('.' == ch) type = LexemeType.Dot;
-                else if(new[] { '=', '>', '<', '(', ')', '&', '|' }.Contains(ch)) type = LexemeType.Symbol;
-                else type = LexemeType.Unknown;
+            // If reached this point:
+            // 1. It's safe to read,
+            // 2. the next input is anythign but space
 
-                return type;
-            };
-
-            //// Verify that provider has valid character now
-            //if(lexemeIs(_provider.Current) != LexemeType.Alpha)
-            //    return token;
-
-
-
-            Predicate<States> canContinue = (s0)=> s0 != States.Error && s0!= States.Finished;
-            var (current, future) = (States.Started, States.Started);
             var sb = new StringBuilder();
+            var (current, future) = (States.Started, States.Started);
+            Predicate<States> canContinue = (s0)=> s0 != States.Error && s0!= States.Finished;
+
 
             do
             {
-                var ch = _provider.Current;
+                var (dt, type) = _provider.Current;
                 switch(current)
                 {
 
-                    case States.Started: // Past: ? Current Letter, Next: Letter|Digit|.
-                        switch(lexemeIs(ch))
+                    case States.Started: 
+                        switch(type)
                         {
-                            case LexemeType.Alpha:
-                                sb.Append(ch);
+                            case LexemeType.Alpha:  //Must be a char or Error
+                                sb.Append(dt);
                                 future = States.LetterFound;
                                 break;
 
@@ -194,16 +189,16 @@ namespace Parser
                         }
                         break;
 
-                    case States.LetterFound: // Past: letter, Current: Letter|digit|. , Next: Letter|digit|.
-                        switch(lexemeIs(ch))
+                    case States.LetterFound: 
+                        switch(type)
                         {
                             case LexemeType.Alpha:
                             case LexemeType.Digit:
-                                sb.Append(ch);
+                                sb.Append(dt);
                                 future = States.LetterOrDigitFound;
                                 break;
-                            case LexemeType.Dot:
-                                sb.Append(ch);
+                            case LexemeType.Symbol when dt == '.':
+                                sb.Append(dt);
                                 future = States.DotFound;
                                 break;
                             default:
@@ -213,15 +208,15 @@ namespace Parser
                         break;
 
                     case States.LetterOrDigitFound:
-                        switch(lexemeIs(ch))
+                        switch(type)
                         {
                             case LexemeType.Alpha:
                             case LexemeType.Digit:
-                                sb.Append(ch);
+                                sb.Append(dt);
                                 future = States.LetterOrDigitFound;
                                 break;
-                            case LexemeType.Dot:
-                                sb.Append(ch);
+                            case LexemeType.Symbol when dt == '.':
+                                sb.Append(dt);
                                 future = States.DotFound;
                                 break;
                             default:
@@ -232,15 +227,11 @@ namespace Parser
 
 
                     case States.DotFound:
-                        switch(lexemeIs(ch))
+                        switch(type)
                         {
                             case LexemeType.Alpha:
-                                sb.Append(ch);
+                                sb.Append(dt);
                                 future = States.LetterFound;
-                                break;
-                            case LexemeType.Digit:
-                            case LexemeType.Dot:
-                                future = States.Error;
                                 break;
                             default:
                                 future = States.Finished;
@@ -250,7 +241,6 @@ namespace Parser
 
 
                     case States.Finished:
-
                     case States.Error:
                         break;
 
@@ -263,6 +253,7 @@ namespace Parser
 
             if(future == States.Finished)
                 token = Some(sb.ToString());
+            else { }
 
 
 
@@ -270,4 +261,8 @@ namespace Parser
             return token;
         }
     }
+
+
+
+
 }

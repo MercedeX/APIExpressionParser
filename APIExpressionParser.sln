@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Parser", "Parser\Parser.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{74723264-D79A-4F27-81E3-38B91A6CEFCA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryMaker", "QueryMaker\QueryMaker.csproj", "{1ED6D345-DACD-4347-A376-874B4C900FE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{74723264-D79A-4F27-81E3-38B91A6CEFCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74723264-D79A-4F27-81E3-38B91A6CEFCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74723264-D79A-4F27-81E3-38B91A6CEFCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ED6D345-DACD-4347-A376-874B4C900FE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ED6D345-DACD-4347-A376-874B4C900FE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ED6D345-DACD-4347-A376-874B4C900FE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ED6D345-DACD-4347-A376-874B4C900FE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
