@@ -139,7 +139,6 @@ namespace Parser
 
 
         enum States { Started, LetterFound, LetterOrDigitFound, DotFound, Finished, Error };
-        //enum LexemeType { Unknown, Alpha, Digit, Dot, Symbol };
 
 
         /// <summary>
@@ -247,16 +246,19 @@ namespace Parser
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                current = future;
+
+                var safe = _provider.Next();
+                if(!safe)
+                {
+                    current = (future != States.Error) ? States.Finished : States.Error;
+                }
+                else
+                    current = future;
             }
-            while(canContinue(current) && _provider.Next());
+            while(canContinue(current));
 
-            if(future == States.Finished)
+            if(future != States.Error)
                 token = Some(sb.ToString());
-            else { }
-
-
-
 
             return token;
         }
