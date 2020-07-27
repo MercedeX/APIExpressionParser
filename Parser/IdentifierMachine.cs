@@ -131,11 +131,11 @@ namespace Parser
     //} 
     #endregion
 
-    public class VariableProvider
+    public class IdentifierMachine
     {
         ILexemeProvider _provider;
 
-        public VariableProvider(ILexemeProvider provider) => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+        public IdentifierMachine(ILexemeProvider provider) => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
 
 
         enum States { Started, LetterFound, LetterOrDigitFound, DotFound, Finished, Error };
@@ -263,8 +263,5 @@ namespace Parser
             return token;
         }
     }
-
-
-
 
 }

@@ -4,8 +4,8 @@ using Parser;
 
 namespace UnitTests
 {
-    [TestClass, TestCategory("Identifier Provider")]
-    public class VariableProviderTest
+    [TestClass, TestCategory("Identifiers")]
+    public class IdentifierMachineTest
     {
         [TestMethod("Can extract identifier")]
         public void M1()
@@ -13,7 +13,7 @@ namespace UnitTests
             var p = new LexemeProvider("   Name");
 
             
-            var p2 = new VariableProvider(p);
+            var p2 = new IdentifierMachine(p);
 
             var t = p2.Get();
 
