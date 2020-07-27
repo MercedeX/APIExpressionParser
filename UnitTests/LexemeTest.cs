@@ -1,9 +1,13 @@
+using System.Collections.Generic;
+using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using NuGet.Frameworks;
 
 using Parser;
 using Parser.Lexemes;
+using Parser.Machines;
 
 namespace UnitTests
 {
@@ -36,5 +40,46 @@ namespace UnitTests
             Assert.IsFalse(p.IsSafeToRead);
             Assert.IsFalse(p.Next());
         }
+
+        [TestMethod("Parent and Child")]
+        public void P1()
+        {
+            var lp = new LexemeProvider("Hello = New AND Parent = SOSO ");
+            var items = new List<object>();
+
+            while(lp.IsSafeToRead )
+            {
+                var idm = new IdentifierMachine(lp);
+                var canContinue = true;
+
+                do
+                {
+                    var t0 = idm.Get();
+                    t0.Match(x =>
+                    {
+                        items.Add(x);
+                        idm.Next();
+                    }, () => canContinue = false);
+                } while(canContinue);
+
+
+
+                var om = new OperatorMachine(lp);
+                canContinue = true;
+
+                do
+                {
+                    var t0 = om.Get();
+                    t0.Match(x =>
+                    {
+                        items.Add(x);
+                        om.Next();
+                    }, () => canContinue = false);
+
+                } while(canContinue);
+            }
+        }
+
     }
 }
+

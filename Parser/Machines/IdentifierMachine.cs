@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using LanguageExt;
 using Parser.Lexemes;
@@ -7,133 +8,30 @@ using static LanguageExt.Prelude;
 
 namespace Parser.Machines
 {
-    #region  Dead Code
-    //public enum Operator:byte
-    //{
-    //    Equals,
-    //    NotEquals,
-    //    GreaterThan,
-    //    GreaterThanOrEqual,
-    //    LessThan,
-    //    LessThanOrEqual,
-    //    Like
-    //}
-    //public enum Joiner: byte
-    //{
-    //    AND,
-    //    OR
-    //}
-    //public enum ValueOrVariable:byte
-    //{
-    //    Value,
-    //    Variable
-    //}
 
-
-    //public readonly struct Operand
-    //{
-    //    public readonly ValueOrVariable type;
-    //    public readonly string value;
-    //}
-
-
-    //public readonly struct Expression1
-    //{
-    //    public readonly Operand leftOperand;
-    //    public readonly Operator @operator;
-    //    public readonly Operand rightOperand;
-    //}
-
-    //public readonly struct Expression2
-    //{
-    //    public readonly Operand leftOperand;
-    //}
-
-    //public readonly struct Expression3
-    //{
-    //    public readonly Expression1 leftExpression;
-    //    public readonly Joiner @operator;
-    //    public readonly Expression1 rightOperand;
-    //}
-
-
-
-
-    //internal class DataProvider
-    //{
-    //    readonly Memory<char> _data;
-    //    int _nextIndex;
-
-    //    public DataProvider(string data)
-    //    {
-    //        _data = data.ToCharArray();
-    //        _nextIndex = 0;
-    //    }
-
-    //    public IEnumerable<Span<char>> GetToken()
-    //    {
-    //        var operators = new[]{'=', '>', '<', '(', ')' };
-    //        var span = _data.Span;
-    //        var curr = _nextIndex;
-    //        var endPosition = _nextIndex;
-
-    //        var nextToken = "";
-
-    //        while(curr< _data.Length)
-    //        {
-    //            if(span[curr] == '@' || char.IsLetter(span[curr]))
-    //            {
-    //                nextToken = "variable";
-    //                var (v0, idx)= ExtractVariable(_data.Slice(curr));
-    //                curr += idx;
-    //                yield return v0;
-    //            }
-    //            else if(char.IsDigit(span[curr]))
-    //            {
-    //                nextToken = "number";
-    //                var (v0, idx) = ExtractNumber(_data.Slice(curr));
-    //                curr += idx;
-    //                yield return v0;
-    //            }
-    //            else if(operators.Contains(span[curr]))
-    //            {
-    //                nextToken = "operator";
-    //                var (v0, idx) = ExtractOperator(_data.Slice(curr));
-    //                curr += idx;
-    //                yield return v0;
-    //            }
-    //            else if(char.IsWhiteSpace(span[curr]))
-    //            {
-    //                curr++;
-    //            }
-    //        }
-
-
-    //        while(_nextIndex < _data.Length)
-    //        {
-    //            if(span[curr]=='@' || char.IsLetterOrDigit(span[curr])
-
-    //        }
-
-
-
-
-    //    }
-
-
-    //}
-
-    //internal class Tokenizer
-    //{
-
-    //} 
-    #endregion
-
-    public class IdentifierMachine
+    public interface IMachine
     {
-        ILexemeProvider _provider;
+        void Next();
+    }
 
-        public IdentifierMachine(ILexemeProvider provider) => _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+    public class IdentifierMachine : IMachine
+    {
+        readonly ILexemeProvider _provider;
+
+        public IdentifierMachine(ILexemeProvider provider)
+        {
+            var tmp = provider ?? throw new ArgumentNullException(nameof(provider));
+            if (tmp is ILexemeParent child)
+            {
+                var tmp1 = child.GetChild();
+                if (tmp1.IsSome)
+                {
+                    _provider = tmp1.First();
+                }
+                else throw new Exception("Cannot retrieve child lexeme provider");
+            }
+            else _provider = provider;
+        }
 
 
         enum States { Started, LetterFound, LetterOrDigitFound, DotFound, Finished, Error };
@@ -149,6 +47,8 @@ namespace Parser.Machines
         {
             var token = Option<string>.None;
 
+            if (!_provider.IsSafeToRead)
+                return token;
 
             while(_provider.Current.type == LexemeType.Space)
             {
@@ -256,9 +156,25 @@ namespace Parser.Machines
             while(canContinue(current));
 
             if(future != States.Error)
-                token = Some(sb.ToString());
+                token = GetToken(sb.ToString());
 
             return token;
+
+            Option<string> GetToken(string txt)
+            {
+                var reserved = new[] {"and", "or", "not"};
+                var t0 = txt.Trim();
+                if (reserved.Any(x => string.Compare(x, t0, StringComparison.CurrentCultureIgnoreCase) == 0))
+                    return Option<string>.None;
+
+                return t0;
+            }
+        }
+
+        public void Next()
+        {
+            if(_provider is ILexemeTransaction tran)
+                tran.Commit();
         }
     }
 

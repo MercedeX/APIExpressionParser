@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using LanguageExt;
 using Parser.Lexemes;
@@ -10,13 +11,26 @@ namespace Parser.Machines
     public enum Operators { AND =1, OR, NOT, Equals, NotEquals, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual };
 
 
-    public class OperatorMachine
+    public class OperatorMachine: IMachine
     {
         readonly ILexemeProvider _provider;
 
-        public OperatorMachine(ILexemeProvider provider) => _provider = provider;
+        public OperatorMachine(ILexemeProvider provider)
+        {
+            var tmp = provider ?? throw new ArgumentNullException(nameof(provider));
+            if(tmp is ILexemeParent child)
+            {
+                var tmp1 = child.GetChild();
+                if(tmp1.IsSome)
+                {
+                    _provider = tmp1.First();
+                }
+                else throw new Exception("Cannot retrieve child lexeme provider");
+            }
+            else _provider = provider;
+        }
 
-        
+
         enum States { Start, A, AN, O, N, NO, DoubleOp, Completion, Finished, Error };
 
 
@@ -27,6 +41,9 @@ namespace Parser.Machines
         public Option<Operators> Get()
         {
             var token = Option<Operators>.None;
+
+            if(!_provider.IsSafeToRead)
+                return token;
 
             while(_provider.Current.type == LexemeType.Space)
             {
@@ -122,6 +139,12 @@ namespace Parser.Machines
 
                 return Option<Operators>.None;
             }
+        }
+
+        public void Next()
+        {
+            if(_provider is ILexemeTransaction tran)
+                tran.Commit();
         }
     }
 }

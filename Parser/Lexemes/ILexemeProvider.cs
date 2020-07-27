@@ -32,5 +32,6 @@ namespace Parser.Lexemes
         bool Back();
 
         bool IsSafeToRead { get; }
+        bool IsConsumed { get; }
     }
 }

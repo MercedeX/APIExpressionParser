@@ -20,7 +20,7 @@ namespace Parser.Lexemes
         public readonly char data;
         public readonly LexemeType type;
 
-        public Lexeme(char data) : this()
+        internal Lexeme(char data) : this()
         {
             this.data = data;
             type = DetermineType(data);

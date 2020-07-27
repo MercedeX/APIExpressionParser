@@ -5,13 +5,18 @@ using static LanguageExt.Prelude;
 
 namespace Parser.Lexemes
 {
-    public class LexemeProvider :ILexemeProvider
+    public interface ILexemePositionMover
     {
-        readonly Memory<char> _data;
-        readonly int _maxPosition;
+        void Move(int position);
+    }
+
+    public class LexemeProvider :ILexemeProvider, ILexemeTransaction, ILexemeParent
+    {
+        readonly Memory<char> _data = Memory<char>.Empty;
+        readonly int _maxPosition=0;
+        readonly Option<Func<int, bool>> _mover = None;
 
         int _index;
-
 
         public LexemeProvider(in string input)
         {
@@ -35,6 +40,7 @@ namespace Parser.Lexemes
             }
         }
         public bool IsSafeToRead => _index <= _maxPosition;
+        public bool IsConsumed => _index == _maxPosition || _index > _maxPosition;
 
         public bool Next()
         {
@@ -97,5 +103,72 @@ namespace Parser.Lexemes
                 return Option<Lexeme>.None;
 
         }
+
+
+        //======================
+        // Lexeme Parent
+        //======================
+        public void Commit()
+        {
+            _mover.Match(move =>
+            {
+
+                if (IsSafeToRead)
+                {
+                    int pos = _data.Span[_index] == ' ' ? _index : _index - 1;
+                    var res = move(pos);
+                    if (!res)
+                        throw new Exception("Invalid position, cannot move parent");
+                }
+                else
+                {
+                    int pos = _index - 1;
+                    var res = move(pos);
+                }
+            }, () => throw new Exception("No parent is present to commit"));
+        }
+
+
+
+        //======================
+        // Lexeme Child 
+        //======================
+        private LexemeProvider(Memory<char> data, Func<int, bool> mover)
+        {
+            _mover = Some(mover);
+
+            if(data.Length >0)
+            {
+                _data = data;
+                _maxPosition = _data.Length - 1;
+                Reset();
+            }
+            else
+                throw new NullReferenceException("Input string is empty. Lexeme provider must have non empty string");
+        }
+        public Option<ILexemeProvider> GetChild()
+        {
+           var child = Option<ILexemeProvider>.None;
+
+            if (IsSafeToRead)
+            {
+                var tmp = _data.Slice(_index);
+                ILexemeProvider c0 = new LexemeProvider(tmp, (pos) =>
+                {
+                    if (pos < _maxPosition)
+                    {
+                        _index += pos;
+                        return true;
+                    }
+
+                    return false;
+                });
+                child = Some(c0);
+            }
+
+            return child;
+        }
+
+
     }
 }
