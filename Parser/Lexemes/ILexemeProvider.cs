@@ -1,6 +1,6 @@
 ﻿using LanguageExt;
 
-namespace Parser
+namespace Parser.Lexemes
 {
 
 

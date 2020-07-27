@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NuGet.Frameworks;
 
 using Parser;
+using Parser.Lexemes;
 
 namespace UnitTests
 {

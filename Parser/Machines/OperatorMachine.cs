@@ -1,11 +1,11 @@
-﻿using LanguageExt;
-
-using System;
-using static LanguageExt.Prelude;
-using System.Text;
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using LanguageExt;
+using Parser.Lexemes;
+using static LanguageExt.Prelude;
 
-namespace Parser
+namespace Parser.Machines
 {
     public enum Operators { AND =1, OR, NOT, Equals, NotEquals, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual };
 
@@ -28,7 +28,7 @@ namespace Parser
         {
             var token = Option<Operators>.None;
 
-            while(_provider.Current.type == Parser.LexemeType.Space)
+            while(_provider.Current.type == LexemeType.Space)
             {
                 if(!_provider.Next())  // its not safe to read further, quit now!
                     return token;

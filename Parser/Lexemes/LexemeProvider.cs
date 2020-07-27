@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using LanguageExt;
-
 using static LanguageExt.Prelude;
 
-namespace Parser
+namespace Parser.Lexemes
 {
     public class LexemeProvider :ILexemeProvider
     {

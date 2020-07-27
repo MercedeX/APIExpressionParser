@@ -1,6 +1,8 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Parser;
+using Parser.Lexemes;
+using Parser.Machines;
 
 namespace UnitTests
 {

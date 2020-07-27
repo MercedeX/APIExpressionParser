@@ -1,13 +1,11 @@
-﻿using LanguageExt;
-
-using System;
-using System.Linq;
+﻿using System;
 using System.Text;
-
+using LanguageExt;
+using Parser.Lexemes;
 using static LanguageExt.Prelude;
 
 
-namespace Parser
+namespace Parser.Machines
 {
     #region  Dead Code
     //public enum Operator:byte
@@ -152,7 +150,7 @@ namespace Parser
             var token = Option<string>.None;
 
 
-            while(_provider.Current.type == Parser.LexemeType.Space)
+            while(_provider.Current.type == LexemeType.Space)
             {
                 if(!_provider.Next())  // its not safe to read further, quit now!
                     return token;
