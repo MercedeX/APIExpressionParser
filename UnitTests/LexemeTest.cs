@@ -14,6 +14,7 @@ namespace UnitTests
     [TestClass]
     public class LexemeTest
     {
+
         [TestMethod("Can detect 1st Char")]
         public void Input1()
         {
@@ -58,7 +59,7 @@ namespace UnitTests
                     t0.Match(x =>
                     {
                         items.Add(x);
-                        idm.Next();
+                        idm.Done();
                     }, () => canContinue = false);
                 } while(canContinue);
 
@@ -73,13 +74,15 @@ namespace UnitTests
                     t0.Match(x =>
                     {
                         items.Add(x);
-                        om.Next();
+                        om.Done();
                     }, () => canContinue = false);
 
                 } while(canContinue);
             }
         }
 
+
+      
     }
 }
 

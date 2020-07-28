@@ -11,7 +11,7 @@ namespace Parser.Machines
 
     public interface IMachine
     {
-        void Next();
+        void Done();
     }
 
     public class IdentifierMachine : IMachine
@@ -45,34 +45,32 @@ namespace Parser.Machines
         /// <returns> a valid character or nothing</returns>
         public Option<string> Get()
         {
+            Predicate<States> canContinue = (s0)=> s0 != States.Error && s0!= States.Finished;
             var token = Option<string>.None;
+            var sb = new StringBuilder();
 
+
+            // Starting symbol must be an alphabet. if not, quit now.
             if (!_provider.IsSafeToRead)
                 return token;
-
-            while(_provider.Current.type == LexemeType.Space)
-            {
-                if(!_provider.Next())  // its not safe to read further, quit now!
-                    return token;
-            }
             
+            if (_provider.Current.type != LexemeType.Alpha)
+                return token;
+
 
             // If reached this point:
             // 1. It's safe to read,
             // 2. the next input is anythign but space
 
-            var sb = new StringBuilder();
             var (current, future) = (States.Started, States.Started);
-            Predicate<States> canContinue = (s0)=> s0 != States.Error && s0!= States.Finished;
-
-
+            var move = false;
             do
             {
                 var (dt, type) = _provider.Current;
+
                 switch(current)
                 {
-
-                    case States.Started: 
+                    case States.Started:
                         switch(type)
                         {
                             case LexemeType.Alpha:  //Must be a char or Error
@@ -86,7 +84,7 @@ namespace Parser.Machines
                         }
                         break;
 
-                    case States.LetterFound: 
+                    case States.LetterFound:
                         switch(type)
                         {
                             case LexemeType.Alpha:
@@ -131,7 +129,8 @@ namespace Parser.Machines
                                 future = States.LetterFound;
                                 break;
                             default:
-                                future = States.Finished;
+                                future = States.Error;
+                                _provider.Back(); // if . was found and no alphabet following it, move back.
                                 break;
                         }
                         break;
@@ -145,13 +144,14 @@ namespace Parser.Machines
                         throw new ArgumentOutOfRangeException();
                 }
 
-                var safe = _provider.Next();
-                if(!safe)
+
+                if (future != States.Error && future != States.Finished)
                 {
-                    current = (future != States.Error) ? States.Finished : States.Error;
+                    var safe = _provider.Next();
+                    current = _provider.IsSafeToRead ? future : States.Finished;
                 }
-                else
-                    current = future;
+                else current = future;
+
             }
             while(canContinue(current));
 
@@ -171,7 +171,7 @@ namespace Parser.Machines
             }
         }
 
-        public void Next()
+        public void Done()
         {
             if(_provider is ILexemeTransaction tran)
                 tran.Commit();

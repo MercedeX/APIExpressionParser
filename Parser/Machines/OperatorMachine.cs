@@ -113,6 +113,8 @@ namespace Parser.Machines
 
             if(current == States.Finished)
                 token = GetToken(sb.ToString());
+            else if (current == States.Error)
+                _provider.Back();
 
             return token;
 
@@ -141,7 +143,7 @@ namespace Parser.Machines
             }
         }
 
-        public void Next()
+        public void Done()
         {
             if(_provider is ILexemeTransaction tran)
                 tran.Commit();

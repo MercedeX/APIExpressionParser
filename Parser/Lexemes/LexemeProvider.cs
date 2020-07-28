@@ -115,7 +115,7 @@ namespace Parser.Lexemes
 
                 if (IsSafeToRead)
                 {
-                    int pos = _data.Span[_index] == ' ' ? _index : _index - 1;
+                    int pos = _index;
                     var res = move(pos);
                     if (!res)
                         throw new Exception("Invalid position, cannot move parent");
