@@ -18,16 +18,18 @@ namespace Parser.Machines
         public OperatorMachine(ILexemeProvider provider)
         {
             var tmp = provider ?? throw new ArgumentNullException(nameof(provider));
+            
             if(tmp is ILexemeParent child)
             {
                 var tmp1 = child.GetChild();
+                
                 if(tmp1.IsSome)
-                {
                     _provider = tmp1.First();
-                }
-                else throw new Exception("Cannot retrieve child lexeme provider");
+                else 
+                    throw new Exception("Cannot retrieve child lexeme provider");
             }
-            else _provider = provider;
+            else 
+                _provider = provider;
         }
 
 
@@ -45,20 +47,15 @@ namespace Parser.Machines
             if(!_provider.IsSafeToRead)
                 return token;
 
-            while(_provider.Current.type == LexemeType.Space)
-            {
-                if(!_provider.Next())  // its not safe to read further, quit now!
-                    return token;
-            }
-
             var current = States.Start;
             var sb = new StringBuilder();
 
             do
             {
+
                 var (dt, type) = _provider.Current;
                 var next = States.Error;
-
+              
                 switch(current)
                 {
                     case States.Start:
@@ -96,10 +93,10 @@ namespace Parser.Machines
                         break;
 
                     case States.Completion:
-                        if(type == LexemeType.Digit || type == LexemeType.Space || type == LexemeType.Punctuation ||
-                            (type == LexemeType.Symbol && (dt == '(' || dt == ')')))
+                        if(type != LexemeType.Alpha)
                             next = States.Finished;
-                        else next = States.Error;
+                        else 
+                            next = States.Error;
                         break;
 
                     default:
@@ -108,8 +105,13 @@ namespace Parser.Machines
                 current = next;
                 if(next < States.Finished)
                     sb.Append(dt);
+                
+
+                if(current != States.Error && current!= States.Finished)
+                    _provider.Next();
+
             } 
-            while(current != States.Error && current!= States.Finished  && _provider.Next());
+            while(current != States.Error && current!= States.Finished && _provider.IsSafeToRead);
 
             if(current == States.Finished)
                 token = GetToken(sb.ToString());

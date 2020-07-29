@@ -22,7 +22,7 @@ namespace Parser.Lexemes
         /// <returns></returns>
         bool Next();
         /// <summary>
-        /// Takes the lexeme to the begining, irrespective of the valid or invalid inout
+        /// Takes the lexeme to the beginning, irrespective of the valid or invalid inout
         /// </summary>
         void Reset();
         /// <summary>
@@ -32,6 +32,5 @@ namespace Parser.Lexemes
         bool Back();
 
         bool IsSafeToRead { get; }
-        bool IsConsumed { get; }
     }
 }

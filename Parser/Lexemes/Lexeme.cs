@@ -19,11 +19,13 @@ namespace Parser.Lexemes
     {
         public readonly char data;
         public readonly LexemeType type;
+        private readonly string txt;
 
         internal Lexeme(char data) : this()
         {
             this.data = data;
             type = DetermineType(data);
+            txt = $"{type}|{data}";
         }
 
         public int AsInt() => Convert.ToInt32(data);
@@ -49,5 +51,7 @@ namespace Parser.Lexemes
             else 
                 return LexemeType.Unknown;
         }
+
+        public override string ToString() => txt;
     }
 }

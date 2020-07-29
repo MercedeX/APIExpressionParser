@@ -33,7 +33,7 @@ namespace UnitTests
             ILexemeProvider p = new LexemeProvider(" +aa'yu _ 45 ");
 
             var items = new List<string>();
-            while (!p.IsConsumed && p.IsSafeToRead)
+            while (p.IsSafeToRead)
             {
                 var machine = Create(p);
                 var t0 = machine.Get();

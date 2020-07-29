@@ -5,11 +5,6 @@ using static LanguageExt.Prelude;
 
 namespace Parser.Lexemes
 {
-    public interface ILexemePositionMover
-    {
-        void Move(int position);
-    }
-
     public class LexemeProvider :ILexemeProvider, ILexemeTransaction, ILexemeParent
     {
         readonly Memory<char> _data = Memory<char>.Empty;
@@ -40,7 +35,6 @@ namespace Parser.Lexemes
             }
         }
         public bool IsSafeToRead => _index <= _maxPosition;
-        public bool IsConsumed => _index == _maxPosition || _index > _maxPosition;
 
         public bool Next()
         {

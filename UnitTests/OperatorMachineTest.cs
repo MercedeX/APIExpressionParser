@@ -1,6 +1,10 @@
+using System.Collections.Generic;
 using System.Linq;
+
+using LanguageExt;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Parser;
+
 using Parser.Lexemes;
 using Parser.Machines;
 
@@ -32,6 +36,30 @@ namespace UnitTests
             Assert.IsTrue(t.IsNone);
         }
 
+        [TestMethod("Garbage Input")]
+        public void M2()
+        {
+            var data = " 77 AND45 OR( NO";
 
+            var p = new LexemeProvider(data);
+            var items = new List<Operators>();
+
+            while (p.IsSafeToRead)
+            {
+                var machine =  new OperatorMachine(p);
+                var op = machine.Get();
+                
+                if (op.IsSome)
+                {
+                    items.Add(op.First());
+                    machine.Done();
+                }
+                else
+                    p.Next();
+            }
+
+            Assert.IsTrue(items.Any(), "Nothing extracted");
+            Assert.IsTrue(items.Count ==2, "not found required number of elements");
+        }
     }
 }
