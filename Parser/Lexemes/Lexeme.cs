@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-
-namespace Parser.Lexemes
+﻿namespace Parser.Lexemes
 {
     public enum LexemeType :byte
     {

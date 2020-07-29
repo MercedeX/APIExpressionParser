@@ -1,11 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using NuGet.Frameworks;
-
-using Parser;
 using Parser.Lexemes;
 using Parser.Machines;
 
@@ -18,25 +14,33 @@ namespace UnitTests
         [TestMethod("Can detect 1st Char")]
         public void Input1()
         {
-            ILexemeProvider p = new LexemeProvider("      Nexus is valid");
+            ILexemeScanner p = new LexemeScanner("      Nexus is valid");
 
 
             while(p.IsSafeToRead && p.Current.type != LexemeType.Alpha)
+            {
                 p.Next();
+            }
 
             if(p.IsSafeToRead)
+            {
                 Assert.IsTrue('N' == p.Current.data);
+            }
             else
+            {
                 Assert.Fail("Incorrect position in provider");
+            }
         }
 
         [TestMethod("All empty input cannot be traversed")]
         public void I2()
         {
-            ILexemeProvider p = new LexemeProvider("     ");
+            ILexemeScanner p = new LexemeScanner("     ");
 
             while(p.IsSafeToRead)
+            {
                 p.Next();
+            }
 
             Assert.IsFalse(p.IsSafeToRead);
             Assert.IsFalse(p.Next());
@@ -45,10 +49,10 @@ namespace UnitTests
         [TestMethod("Parent and Child")]
         public void P1()
         {
-            var lp = new LexemeProvider("Hello = New AND Parent = SOSO ");
+            var lp = new LexemeScanner("Hello = New AND Parent = SOSO ");
             var items = new List<object>();
 
-            while(lp.IsSafeToRead )
+            while(lp.IsSafeToRead)
             {
                 var idm = new IdentifierMachine(lp);
                 var canContinue = true;
@@ -82,7 +86,7 @@ namespace UnitTests
         }
 
 
-      
+
     }
 }
 

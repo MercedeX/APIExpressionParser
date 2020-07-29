@@ -16,21 +16,21 @@ namespace UnitTests
         [TestMethod("AND OR NOT")]
         public void M1()
         {
-            var p = new LexemeProvider("   AND OR NOT NOTO");
+            var p = new LexemeScanner("   AND OR NOT NOTO");
 
 
             var p2 = new OperatorMachine(p);
 
             var t = p2.Get();
 
-            Assert.IsTrue(t.IsSome && t.First() == Operators.AND);
+            Assert.IsTrue(t.IsSome && t.First().@operator == Operators.AND);
 
             t = p2.Get();
 
-            Assert.IsTrue(t.IsSome &&  t.First() == Operators.OR );
+            Assert.IsTrue(t.IsSome && t.First().@operator == Operators.OR);
 
             t = p2.Get();
-            Assert.IsTrue(t.IsSome && t.First() == Operators.NOT);
+            Assert.IsTrue(t.IsSome && t.First().@operator == Operators.NOT);
 
             t = p2.Get();
             Assert.IsTrue(t.IsNone);
@@ -41,25 +41,27 @@ namespace UnitTests
         {
             var data = " 77 AND45 OR( NO";
 
-            var p = new LexemeProvider(data);
+            var p = new LexemeScanner(data);
             var items = new List<Operators>();
 
-            while (p.IsSafeToRead)
+            while(p.IsSafeToRead)
             {
                 var machine =  new OperatorMachine(p);
                 var op = machine.Get();
-                
-                if (op.IsSome)
+
+                if(op.IsSome)
                 {
-                    items.Add(op.First());
+                    items.Add(op.First().@operator);
                     machine.Done();
                 }
                 else
+                {
                     p.Next();
+                }
             }
 
             Assert.IsTrue(items.Any(), "Nothing extracted");
-            Assert.IsTrue(items.Count ==2, "not found required number of elements");
+            Assert.IsTrue(items.Count == 2, "not found required number of elements");
         }
     }
 }

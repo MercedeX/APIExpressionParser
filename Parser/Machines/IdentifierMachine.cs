@@ -1,31 +1,17 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+
 using LanguageExt;
+
 using Parser.Lexemes;
-using static LanguageExt.Prelude;
 
 
 namespace Parser.Machines
 {
-    public class IdentifierMachine : IMachine
+    public class IdentifierMachine :MachineBase
     {
-        readonly ILexemeProvider _provider;
-
-        public IdentifierMachine(ILexemeProvider provider)
-        {
-            var tmp = provider ?? throw new ArgumentNullException(nameof(provider));
-            if (tmp is ILexemeParent child)
-            {
-                var tmp1 = child.GetChild();
-                if (tmp1.IsSome)
-                {
-                    _provider = tmp1.First();
-                }
-                else throw new Exception("Cannot retrieve child lexeme provider");
-            }
-            else _provider = provider;
-        }
+        public IdentifierMachine(ILexemeScanner scanner) : base(scanner) { }
 
 
         enum States { Started, LetterFound, LetterOrDigitFound, DotFound, Finished, Error };
@@ -33,11 +19,10 @@ namespace Parser.Machines
 
         /// <summary>
         /// THis function is a state machine. it should be called only when the lexeme is a character that is valid for this machine 
-        /// it advances the provider only when the current charcter is a valid one. if it is not then it exits 
+        /// it advances the scanner only when the current charcter is a valid one. if it is not then it exits 
         ///  </summary>
-        /// <param name="provider">Lexeme Provider</param>
         /// <returns> a valid character or nothing</returns>
-        public Option<Token> Get()
+        public override Option<Token> Get()
         {
 
             Predicate<States> canContinue = (s0)=> s0 != States.Error && s0!= States.Finished;
@@ -46,11 +31,15 @@ namespace Parser.Machines
 
 
             // Starting symbol must be an alphabet. if not, quit now.
-            if (!_provider.IsSafeToRead)
+            if(!_scanner.IsSafeToRead)
+            {
                 return token;
-            
-            if (_provider.Current.type != LexemeType.Alpha)
+            }
+
+            if(_scanner.Current.type != LexemeType.Alpha)
+            {
                 return token;
+            }
 
 
             // If reached this point:
@@ -58,10 +47,10 @@ namespace Parser.Machines
             // 2. the next input is anythign but space
 
             var (current, future) = (States.Started, States.Started);
-            var move = false;
+
             do
             {
-                var (dt, type) = _provider.Current;
+                var (dt, type) = _scanner.Current;
 
                 switch(current)
                 {
@@ -125,7 +114,7 @@ namespace Parser.Machines
                                 break;
                             default:
                                 future = States.Error;
-                                _provider.Back(); // if . was found and no alphabet following it, move back.
+                                _scanner.Back(); // if . was found and no alphabet following it, move back.
                                 break;
                         }
                         break;
@@ -140,38 +129,38 @@ namespace Parser.Machines
                 }
 
 
-                if (future != States.Error && future != States.Finished)
+                if(future != States.Error && future != States.Finished)
                 {
-                    var safe = _provider.Next();
-                    current = _provider.IsSafeToRead ? future : States.Finished;
+                    _ = _scanner.Next();
+                    current = _scanner.IsSafeToRead ? future : States.Finished;
                 }
-                else 
+                else
+                {
                     current = future;
-
+                }
             }
             while(canContinue(current));
 
             if(future != States.Error)
+            {
                 token = GetToken(sb.ToString());
+            }
 
             return token;
 
             Option<Token> GetToken(string txt)
             {
                 var reserved = new[] {"and", "or", "not"};
-                
-                if (reserved.All(x => string.Compare(x, txt, StringComparison.CurrentCultureIgnoreCase) != 0))
-                    return new Token(TokenType.Identifier, txt.Trim()); 
 
-                return Option<Token>.None; 
+                if(reserved.All(x => string.Compare(x, txt, StringComparison.CurrentCultureIgnoreCase) != 0))
+                {
+                    return new Token(TokenType.Identifier, txt.Trim());
+                }
+
+                return Option<Token>.None;
             }
         }
 
-        public void Done()
-        {
-            if(_provider is ILexemeTransaction tran)
-                tran.Commit();
-        }
     }
 
 }

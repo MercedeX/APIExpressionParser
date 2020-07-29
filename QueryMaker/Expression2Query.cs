@@ -2,7 +2,7 @@
 
 namespace QueryMaker
 {
-    public class Expression2Query : IExpression2Query
+    public class Expression2Query :IExpression2Query
     {
         readonly string _input;
 
@@ -10,7 +10,9 @@ namespace QueryMaker
         {
             _input = input?.Trim();
             if(string.IsNullOrEmpty(_input))
+            {
                 throw new ArgumentException("Input expression as string cannot be empty");
+            }
         }
 
         public string ToSql() => null;

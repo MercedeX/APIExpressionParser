@@ -4,7 +4,7 @@ namespace Parser.Lexemes
 {
 
 
-    public interface ILexemeProvider
+    public interface ILexemeScanner
     {
         /// <summary>
         /// Returns future lexeme or None if pointer is past the valid position

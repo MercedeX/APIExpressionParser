@@ -1,6 +1,4 @@
-﻿using LanguageExt;
-
-namespace QueryMaker
+﻿namespace QueryMaker
 {
     public class QueryMaker
     {
