@@ -20,6 +20,7 @@ Supported Operations:
 Customer.Name = John AND Customer.Age >32 OR Customer.CreatedOn BETWEEN (22/10/2020 AND 22/12/2020)
 
 will generate 
+
 SELECT * 
 FROM Customer
 Where (Name like 'John') AND (Age >32) OR (CreatedOn BETWEEN '22/10/2020' AND 22/12/2020')
