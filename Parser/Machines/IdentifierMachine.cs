@@ -8,12 +8,6 @@ using static LanguageExt.Prelude;
 
 namespace Parser.Machines
 {
-
-    public interface IMachine
-    {
-        void Done();
-    }
-
     public class IdentifierMachine : IMachine
     {
         readonly ILexemeProvider _provider;
@@ -43,10 +37,11 @@ namespace Parser.Machines
         ///  </summary>
         /// <param name="provider">Lexeme Provider</param>
         /// <returns> a valid character or nothing</returns>
-        public Option<string> Get()
+        public Option<Token> Get()
         {
+
             Predicate<States> canContinue = (s0)=> s0 != States.Error && s0!= States.Finished;
-            var token = Option<string>.None;
+            var token = Option<Token>.None;
             var sb = new StringBuilder();
 
 
@@ -150,7 +145,8 @@ namespace Parser.Machines
                     var safe = _provider.Next();
                     current = _provider.IsSafeToRead ? future : States.Finished;
                 }
-                else current = future;
+                else 
+                    current = future;
 
             }
             while(canContinue(current));
@@ -160,14 +156,14 @@ namespace Parser.Machines
 
             return token;
 
-            Option<string> GetToken(string txt)
+            Option<Token> GetToken(string txt)
             {
                 var reserved = new[] {"and", "or", "not"};
-                var t0 = txt.Trim();
-                if (reserved.Any(x => string.Compare(x, t0, StringComparison.CurrentCultureIgnoreCase) == 0))
-                    return Option<string>.None;
+                
+                if (reserved.All(x => string.Compare(x, txt, StringComparison.CurrentCultureIgnoreCase) != 0))
+                    return new Token(TokenType.Identifier, txt.Trim()); 
 
-                return t0;
+                return Option<Token>.None; 
             }
         }
 

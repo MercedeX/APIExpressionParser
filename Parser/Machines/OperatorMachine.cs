@@ -8,7 +8,7 @@ using static LanguageExt.Prelude;
 
 namespace Parser.Machines
 {
-    public enum Operators { AND =1, OR, NOT, Equals, NotEquals, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual };
+    public enum Operators { Unknown = 0, AND =1, OR, NOT, Equals, NotEquals, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual };
 
 
     public class OperatorMachine: IMachine
@@ -40,9 +40,9 @@ namespace Parser.Machines
         /// Gets the operator or None if no operator found. 
         /// </summary>
         /// <returns></returns>
-        public Option<Operators> Get()
+        public Option<Token> Get()
         {
-            var token = Option<Operators>.None;
+            var token = Option<Token>.None;
 
             if(!_provider.IsSafeToRead)
                 return token;
@@ -114,20 +114,20 @@ namespace Parser.Machines
             while(current != States.Error && current!= States.Finished && _provider.IsSafeToRead);
 
             if(current == States.Finished)
-                token = GetToken(sb.ToString());
+                token = GetToken(sb.ToString().ToUpperInvariant());
             else if (current == States.Error)
                 _provider.Back();
 
             return token;
 
 
-            Option<Operators> GetToken(string text)
+            Option<Token> GetToken(string text)
             {
                 var table = new Dictionary<string, Operators>
                 {
-                    { "and", Operators.AND },
-                    { "or", Operators.OR },
-                    { "not", Operators.NOT },
+                    { "AND", Operators.AND },
+                    { "OR", Operators.OR },
+                    { "NOT", Operators.NOT },
                     { "=", Operators.Equals },
                     { "<", Operators.LessThan },
                     { "<=", Operators.LessThanOrEqual },
@@ -136,12 +136,11 @@ namespace Parser.Machines
                     { "<>", Operators.NotEquals }
                 };
 
-                var t1 = text.ToLower();
-                if(table.ContainsKey(t1))
-                    return Some(table[t1]);
+                if(table.ContainsKey(text))
+                    return new Token(TokenType.Operator, table[text]);
 
 
-                return Option<Operators>.None;
+                return Option<Token>.None;
             }
         }
 

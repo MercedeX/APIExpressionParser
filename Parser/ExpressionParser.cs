@@ -14,5 +14,15 @@ namespace Parser
         {
             _provider = new LexemeProvider(input);
         }
+
+        public void Parse()
+        {
+            
+        }
+    }
+
+    public class DetermineMachine
+    {
+
     }
 }
