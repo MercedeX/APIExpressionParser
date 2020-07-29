@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using LanguageExt;
 using static LanguageExt.Prelude;
@@ -87,15 +88,49 @@ namespace Parser.Lexemes
         bool IsValidCharacter(char ch) => !(char.IsControl(ch) || char.IsSurrogate(ch));
         Option<Lexeme> ReadAtPosition(int position)
         {
+            var ret = Option<Lexeme>.None;
+
             if(position <= _maxPosition)
             {
                 var ch = _data.Span[position];
-                var t0 = IsValidCharacter(ch) ? Some(new Lexeme(ch)) : None;
-                return t0;
+                if (IsValidCharacter(ch))
+                {
+                    var type = DetermineType(ch);
+                    ret= new Lexeme(ch, type);
+                }
             }
-            else
-                return Option<Lexeme>.None;
 
+            return ret;
+        }
+
+        [DebuggerHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static LexemeType DetermineType(char ch)
+        {
+            var ret = LexemeType.Unknown;
+
+            if(char.IsLetter(ch))
+                ret = LexemeType.Alpha;
+
+            else if(char.IsDigit(ch))
+                ret = LexemeType.Digit;
+            
+            else if(IsPunctuation(ch))
+                ret = LexemeType.Punctuation;
+            
+            else if(IsSymbol(ch))
+                ret = LexemeType.Symbol;
+            
+            else if(IsSpace(ch))
+                ret = LexemeType.Space;
+
+            return ret;
+
+            //======================
+            // Local Functions
+            //======================
+            bool IsPunctuation(char c) => c == '\'' || c == '"' || c == '`';
+            bool IsSymbol(char c) => char.IsSymbol(ch) || ch == '(' || ch == ')';
+            bool IsSpace(char c) => c == ' ' || c == '\t' || c == '\r' || c == '\n';
         }
 
 
