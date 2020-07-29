@@ -57,10 +57,7 @@ namespace Parser.Machines
                         {
                             next = States.N;
                         }
-                        else if(dt == '>' || dt == '<')
-                        {
-                            next = States.DoubleOp;
-                        }
+                        else if (dt == '>' || dt == '<') next = States.DoubleOp;
                         else if(dt == '=')
                         {
                             next = States.Completion;
@@ -141,7 +138,8 @@ namespace Parser.Machines
                         break;
 
                     default:
-                        throw new ArgumentOutOfRangeException();
+                        next = States.Error;
+                        break;
                 }
                 current = next;
                 if(next < States.Finished)

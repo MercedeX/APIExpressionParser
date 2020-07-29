@@ -71,7 +71,7 @@ namespace Parser.Machines
                     }
 
                     current = next;
-                    if(current != States.Error)
+                    if(current != States.Error && current!=States.Finished)
                     {
                         _scanner.Next();
                     }

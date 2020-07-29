@@ -31,14 +31,10 @@ namespace Parser
         {
             this.type = type;
             this.@long = @long;
-            this.@long = 0;
-            this.@decimal = 0.0;
         }
         public Token(TokenType type, double data) : this()
         {
             this.type = type;
-            this.@long = 0;
-            this.@long = 0;
             this.@decimal = data;
         }
 
